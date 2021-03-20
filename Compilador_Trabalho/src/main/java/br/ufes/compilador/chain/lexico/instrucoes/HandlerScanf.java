@@ -2,11 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufes.compiladores.chain.lexico.instrucoes;
+package br.ufes.compilador.chain.lexico.instrucoes;
 
-import br.ufes.compiladores.chain.lexico.AbstractHandlerToken;
-import br.ufes.compiladores.model.Categoria;
-import br.ufes.compiladores.model.Token;
+import br.ufes.compilador.chain.lexico.AbstractHandlerToken;
+import br.ufes.compilador.model.Categoria;
+import br.ufes.compilador.model.Token;
 
 /**
  *

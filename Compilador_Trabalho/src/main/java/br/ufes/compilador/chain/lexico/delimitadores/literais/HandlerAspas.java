@@ -2,12 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufes.compiladores.chain.lexico.delimitadores.literais;
+package br.ufes.compilador.chain.lexico.delimitadores.literais;
 
-import br.ufes.compiladores.chain.lexico.identificadores.HandlerIdentificador;
-import br.ufes.compiladores.chain.lexico.AbstractHandlerToken;
-import br.ufes.compiladores.model.Categoria;
-import br.ufes.compiladores.model.Token;
+import br.ufes.compilador.chain.lexico.identificadores.HandlerIdentificador;
+import br.ufes.compilador.chain.lexico.AbstractHandlerToken;
+import br.ufes.compilador.model.Categoria;
+import br.ufes.compilador.model.Token;
 
 /**
  *
