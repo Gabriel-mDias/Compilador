@@ -106,6 +106,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
 
         lbSaida.setText("Saída:");
 
+        txtSaida.setEditable(false);
         txtSaida.setColumns(20);
         txtSaida.setRows(5);
         scrollPanelSaida.setViewportView(txtSaida);
