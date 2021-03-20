@@ -23,7 +23,8 @@ public class HandlerVoid  extends AbstractHandler{
         if(token.getSimbolo().equals("void")){
             token.setCategoria("Especificador_VOID");
         }else {
-            this.setProximo(null);
+            this.setProximo(new HandlerAbreChave(token));
+
         } 
     }
     
