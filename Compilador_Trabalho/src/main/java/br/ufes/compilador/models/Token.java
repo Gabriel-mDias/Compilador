@@ -13,18 +13,18 @@ public class Token {
     
     private int id;
     private String simbolo;
-    private int linha;
     private int posicaoInicio;
     private int posicaoFim;
     private String categoria;
+    private LinhaCodigo linha;
 
-    public Token(int id, String simbolo, int linha, int posicaoInicio, int posicaoFim, String categoria) {
+    public Token(int id, String simbolo, int posicaoInicio, int posicaoFim, String categoria, LinhaCodigo linha) {
         this.id = id;
         this.simbolo = simbolo;
-        this.linha = linha;
         this.posicaoInicio = posicaoInicio;
         this.posicaoFim = posicaoFim;
         this.categoria = categoria;
+        this.linha = linha;
     }
     
     public int getId() {
@@ -41,14 +41,6 @@ public class Token {
 
     public void setSimbolo(String simbolo) {
         this.simbolo = simbolo;
-    }
-
-    public int getLinha() {
-        return linha;
-    }
-
-    public void setLinha(int linha) {
-        this.linha = linha;
     }
 
     public int getPosicaoInicio() {
@@ -73,6 +65,14 @@ public class Token {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+
+    public LinhaCodigo getLinha() {
+        return linha;
+    }
+
+    public void setLinha(LinhaCodigo linha) {
+        this.linha = linha;
     }
     
     

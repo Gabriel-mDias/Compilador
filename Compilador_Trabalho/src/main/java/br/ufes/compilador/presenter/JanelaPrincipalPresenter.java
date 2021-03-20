@@ -6,6 +6,7 @@
 package br.ufes.compilador.presenter;
 
 import br.ufes.compilador.models.LinhaCodigo;
+import br.ufes.compilador.models.Token;
 import br.ufes.compilador.view.JanelaPrincipalView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ public class JanelaPrincipalPresenter {
     
     private JanelaPrincipalView view;
     private List<LinhaCodigo> linhas;
+    private List<Token> tokens;
 
     public JanelaPrincipalPresenter() {
             
@@ -41,17 +43,44 @@ public class JanelaPrincipalPresenter {
     
     private void compilarCodigo(String codigoFonte){
         
-        this.linhas = new ArrayList<LinhaCodigo>();
+        this.linhas = new ArrayList<>();
+        this.tokens = new ArrayList<>();
         int posicaoLinha = 1;
+        int idToken = 1;
         
         codigoFonte = preProcessamentoCodigo(codigoFonte);
         
             //Para cada quebra de linha, uma nova LinhaCodigo é gerada
         for(String linha : codigoFonte.split("\n")){
-            linhas.add( new LinhaCodigo(linha, posicaoLinha++).removerComentarioSimples());
+            
+            LinhaCodigo novaLinha = new LinhaCodigo(linha, posicaoLinha++).removerComentarioSimples();
+            linhas.add(novaLinha);
+            
+                //Para cada linha, Tokens são buscados
+            String palavra = "";
+            
+            //A opção por percorrer caracter por caracter é devido a possibilidade de um simbolo estar presente mais de uma vez na lista
+            for(int posicao = 0; posicao < novaLinha.getConteudo().length(); posicao++ ){
+                
+                if(novaLinha.getConteudo().charAt(posicao) != ' '){
+                    
+                    int fimToken = novaLinha.getConteudo().indexOf(" ", posicao);
+                    
+                    if(fimToken > -1 ){
+                        palavra = novaLinha.getConteudo().substring(posicao,fimToken);
+                    }else{
+                        palavra = novaLinha.getConteudo().substring(posicao);
+                    }
+                    
+                    Token novoToken = new Token(idToken++, palavra, posicao, fimToken-1, "undefined", novaLinha);
+                    tokens.add(novoToken);
+                    
+                    posicao += palavra.length();
+                }
+                
+            }
         }
-        
-        view.getTxtSaida().setText(codigoFonte);
+    
     }
     
     /**
@@ -60,11 +89,81 @@ public class JanelaPrincipalPresenter {
      * @return 
      */
     private String preProcessamentoCodigo(String codigoFonte){
-            //Descosiderando tabulações
-        codigoFonte = codigoFonte.replaceAll("\t", "");
         
+            //Separação dos tokens específicos, dando o espaço do restante
+  
+        // Vírgurla
+        codigoFonte = codigoFonte.replaceAll(",", " , ");
+
+        //Ponto e vírgula
+        codigoFonte = codigoFonte.replaceAll(";", " ; ");
+        
+        // Colchetes
+        codigoFonte = codigoFonte.replaceAll("\\[", " \\[ ");
+        codigoFonte = codigoFonte.replaceAll("\\]", " \\] ");
+        
+        // Parenteses
+        codigoFonte = codigoFonte.replaceAll("\\(", " \\( ");
+        codigoFonte = codigoFonte.replaceAll("\\)", " \\) ");
+
+        // Chaves
+        codigoFonte = codigoFonte.replaceAll("\\{", " \\{ ");
+        codigoFonte = codigoFonte.replaceAll("\\}", " \\} ");
+
+        // Aspas
+        codigoFonte = codigoFonte.replaceAll("\\'", " \\' ");
+        codigoFonte = codigoFonte.replaceAll("\\\"", " \\\" ");
+
+        // Operadores lógicos
+        codigoFonte = codigoFonte.replaceAll("\\&&", " \\&& ");
+        codigoFonte = codigoFonte.replaceAll("\\|\\|", " \\|\\| ");
+
+        // Geral
+        codigoFonte = codigoFonte.replaceAll("\\==", " \\=.= ");
+        codigoFonte = codigoFonte.replaceAll("\\=", " \\= ");
+        codigoFonte = codigoFonte.replaceAll("\\= \\. \\=", "\\==");
+
+        codigoFonte = codigoFonte.replaceAll("\\! = ", " \\!.= ");
+        codigoFonte = codigoFonte.replaceAll("\\!", " \\! ");
+        codigoFonte = codigoFonte.replaceAll("\\! \\.=", "\\!=");
+
+        codigoFonte = codigoFonte.replaceAll("\\< = ", " \\<.= ");
+        codigoFonte = codigoFonte.replaceAll("\\<", " \\< ");
+        codigoFonte = codigoFonte.replaceAll("\\< \\.=", "\\<=");
+
+        codigoFonte = codigoFonte.replaceAll("\\> = ", " \\>.= ");
+        codigoFonte = codigoFonte.replaceAll("\\>", " \\> ");
+        codigoFonte = codigoFonte.replaceAll("\\> \\.=", "\\>=");
+
+        codigoFonte = codigoFonte.replaceAll("\\+ = ", " \\+.= ");
+        codigoFonte = codigoFonte.replaceAll("\\+", " \\+ ");
+        codigoFonte = codigoFonte.replaceAll("\\+ \\.=", "\\+=");
+
+        codigoFonte = codigoFonte.replaceAll("\\- = ", " \\-.= ");
+        codigoFonte = codigoFonte.replaceAll("\\-", " \\- ");
+        codigoFonte = codigoFonte.replaceAll("\\- \\.=", "\\-=");
+
+        codigoFonte = codigoFonte.replaceAll("\\* = ", " \\*.= ");
+        codigoFonte = codigoFonte.replaceAll("\\*", " \\* ");
+        codigoFonte = codigoFonte.replaceAll("\\* \\.=", "\\*=");
+
+        codigoFonte = codigoFonte.replaceAll("\\/ = ", " \\/.= ");
+        codigoFonte = codigoFonte.replaceAll("\\/", " \\/ ");
+        codigoFonte = codigoFonte.replaceAll("\\/ \\.=", "\\/=");
+
+        codigoFonte = codigoFonte.replaceAll("\\% = ", " \\%.= ");
+        codigoFonte = codigoFonte.replaceAll("\\%", " \\% ");
+        codigoFonte = codigoFonte.replaceAll("\\% \\.=", "\\%=");
+        
+        //Descosiderando tabulações, removendo espaços multiplos e no fim da linha
+        codigoFonte = codigoFonte.replaceAll("\t", " ");
+        codigoFonte = codigoFonte.replaceAll("\\ +", " ");
+        codigoFonte = codigoFonte.replaceAll("\\ \\n", "\\\n");
+        
+        //Removendo blocos de comentários
         codigoFonte = codigoFonte.replaceAll("\\/\\*([\\s\\S]*)\\*\\/", "");
         
         return codigoFonte;
     }
+    
 }
