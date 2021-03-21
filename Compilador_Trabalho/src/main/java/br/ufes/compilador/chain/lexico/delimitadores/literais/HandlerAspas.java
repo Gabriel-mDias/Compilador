@@ -6,6 +6,7 @@
 package br.ufes.compilador.chain.lexico.delimitadores.literais;
 
 import br.ufes.compilador.chain.AbstractHandler;
+import br.ufes.compilador.chain.lexico.instrucoes.HandlerAbreColchete;
 import br.ufes.compilador.models.Token;
 
 /**
@@ -24,7 +25,8 @@ public class HandlerAspas  extends AbstractHandler{
                 (token.getSimbolo().toString().toLowerCase().compareTo("\'") == 0)){
             token.setCategoria("delimitador_literal_aspas");
         } else {
-            this.setProximo(null);
+            this.setProximo(new HandlerAbreColchete(token));
+
         }
     }
     
