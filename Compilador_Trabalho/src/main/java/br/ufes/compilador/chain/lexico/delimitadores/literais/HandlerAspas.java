@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufes.compilador.chain.lexico.tipo;
+package br.ufes.compilador.chain.lexico.delimitadores.literais;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.models.Token;
@@ -12,16 +12,16 @@ import br.ufes.compilador.models.Token;
  *
  * @author Matheus
  */
-public class HandlerFechaChave  extends AbstractHandler{
+public class HandlerAspas  extends AbstractHandler{
 
-    public HandlerFechaChave(Token token) {
+    public HandlerAspas(Token token) {
         super(token);
     }
 
     @Override
     public void executar(Token token) {
-        if ((pToken.getSimbolo().toString().toLowerCase().compareTo("\"") == 0) ||
-                (pToken.getSimbolo().toString().toLowerCase().compareTo("\'") == 0)){
+        if ((token.getSimbolo().toString().toLowerCase().compareTo("\"") == 0) ||
+                (token.getSimbolo().toString().toLowerCase().compareTo("\'") == 0)){
             token.setCategoria("delimitador_literal_aspas");
         } else {
             this.setProximo(null);

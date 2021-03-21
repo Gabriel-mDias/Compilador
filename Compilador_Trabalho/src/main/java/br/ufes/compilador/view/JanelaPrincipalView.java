@@ -57,7 +57,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         );
         panelCodigoLayout.setVerticalGroup(
             panelCodigoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(scrollPanelCodigo, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(scrollPanelCodigo)
         );
 
         tblAnaliseLexica.setModel(new javax.swing.table.DefaultTableModel(
@@ -65,11 +65,11 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Token", "Valor"
+                "ID", "Linha", "Símbolo", "Categoria"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -80,6 +80,8 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         if (tblAnaliseLexica.getColumnModel().getColumnCount() > 0) {
             tblAnaliseLexica.getColumnModel().getColumn(0).setResizable(false);
             tblAnaliseLexica.getColumnModel().getColumn(1).setResizable(false);
+            tblAnaliseLexica.getColumnModel().getColumn(2).setResizable(false);
+            tblAnaliseLexica.getColumnModel().getColumn(3).setResizable(false);
         }
 
         javax.swing.GroupLayout panelAnaliseLexicoLayout = new javax.swing.GroupLayout(panelAnaliseLexico);
@@ -151,8 +153,8 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbSaida)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPanelSaida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(scrollPanelSaida)
+                .addContainerGap())
         );
 
         tabPanelResultados.getAccessibleContext().setAccessibleName("Análise Lexica");

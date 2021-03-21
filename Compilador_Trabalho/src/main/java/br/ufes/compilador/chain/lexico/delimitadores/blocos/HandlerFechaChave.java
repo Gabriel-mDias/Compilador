@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufes.compilador.chain.lexico.tipo;
+package br.ufes.compilador.chain.lexico.delimitadores.blocos;
 
 import br.ufes.compilador.chain.AbstractHandler;
+import br.ufes.compilador.chain.lexico.delimitadores.instrucoes.HandlerPontoEVirgula;
 import br.ufes.compilador.models.Token;
 
 /**

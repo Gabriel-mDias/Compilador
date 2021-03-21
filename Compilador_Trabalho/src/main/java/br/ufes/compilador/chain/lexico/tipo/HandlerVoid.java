@@ -6,6 +6,7 @@
 package br.ufes.compilador.chain.lexico.tipo;
 
 import br.ufes.compilador.chain.AbstractHandler;
+import br.ufes.compilador.chain.lexico.delimitadores.blocos.HandlerAbreChave;
 import br.ufes.compilador.models.Token;
 
 /**
