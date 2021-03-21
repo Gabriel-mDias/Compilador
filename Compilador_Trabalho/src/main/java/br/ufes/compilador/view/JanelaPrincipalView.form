@@ -13,6 +13,16 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Executar"/>
           </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JRadioButtonMenuItem" name="rbAnaliseLexicaAuto">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="An&#xe1;lise L&#xe9;xica a cada altera&#xe7;&#xe3;o"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbAnaliseLexicaAutoActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
         </Menu>
       </SubComponents>
     </Menu>

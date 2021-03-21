@@ -6,6 +6,7 @@
 package br.ufes.compilador.view;
 
 import javax.swing.JButton;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
@@ -38,6 +39,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         menuBar = new javax.swing.JMenuBar();
         menuArquivo = new javax.swing.JMenu();
         menuExecutar = new javax.swing.JMenu();
+        rbAnaliseLexicaAuto = new javax.swing.JRadioButtonMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -117,6 +119,15 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         menuBar.add(menuArquivo);
 
         menuExecutar.setText("Executar");
+
+        rbAnaliseLexicaAuto.setText("Análise Léxica a cada alteração");
+        rbAnaliseLexicaAuto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbAnaliseLexicaAutoActionPerformed(evt);
+            }
+        });
+        menuExecutar.add(rbAnaliseLexicaAuto);
+
         menuBar.add(menuExecutar);
 
         setJMenuBar(menuBar);
@@ -162,6 +173,10 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void rbAnaliseLexicaAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbAnaliseLexicaAutoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbAnaliseLexicaAutoActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCompilar;
     private javax.swing.JScrollPane jScrollPane2;
@@ -171,6 +186,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
     private javax.swing.JMenu menuExecutar;
     private javax.swing.JPanel panelAnaliseLexico;
     private javax.swing.JPanel panelCodigo;
+    private javax.swing.JRadioButtonMenuItem rbAnaliseLexicaAuto;
     private javax.swing.JScrollPane scrollPanelCodigo;
     private javax.swing.JScrollPane scrollPanelSaida;
     private javax.swing.JTabbedPane tabPanelResultados;
@@ -212,5 +228,11 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         this.txtSaida = txtSaida;
     }
 
-    
+    public JRadioButtonMenuItem getRbAnaliseLexicaAuto() {
+        return rbAnaliseLexicaAuto;
+    }
+
+    public void setRbAnaliseLexicaAuto(JRadioButtonMenuItem rbAnaliseLexicaAuto) {
+        this.rbAnaliseLexicaAuto = rbAnaliseLexicaAuto;
+    }
 }
