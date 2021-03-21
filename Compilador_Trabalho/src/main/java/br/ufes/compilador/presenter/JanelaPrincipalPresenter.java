@@ -5,6 +5,8 @@
  */
 package br.ufes.compilador.presenter;
 
+import br.ufes.compilador.chain.AbstractHandler;
+import br.ufes.compilador.chain.lexico.especificadores.HandlerAuto;
 import br.ufes.compilador.models.LinhaCodigo;
 import br.ufes.compilador.models.Token;
 import br.ufes.compilador.view.JanelaPrincipalView;
@@ -12,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -81,7 +84,8 @@ public class JanelaPrincipalPresenter {
             }
         }
 
-        
+        this.tokens = this.chainAnaliseLexica(tokens);
+        this.preencheTabelaAnaliseLexica(tokens);
     }
     
     /**
@@ -167,4 +171,35 @@ public class JanelaPrincipalPresenter {
         return codigoFonte;
     }
     
+    /**
+     * Método responsável por executar a Chain of Responsability
+     * referente a análise léxica com os dados passados como parâmetro
+     */
+    private List<Token> chainAnaliseLexica(List<Token> tokens){
+        for(Token token : tokens){
+            AbstractHandler handler = new HandlerAuto(token);
+        }
+        
+        return tokens;
+    }
+    
+    private void preencheTabelaAnaliseLexica(List<Token> tokens){
+        DefaultTableModel modelTabela = new DefaultTableModel(new Object[]{"ID", "Linha", "Símbolo", "Categoria"}, 0) {
+            @Override
+            public boolean isCellEditable(int rowIndex, int mColIndex) {
+                return false;
+            }
+        }; 
+        
+        for(Token token : tokens){
+            modelTabela.addRow(new Object[]{
+                token.getId(),
+                token.getLinha().getPosicao(),
+                token.getSimbolo(),
+                token.getCategoria()
+            });
+        }
+        
+        this.view.getTblAnaliseLexica().setModel(modelTabela);
+    }
 }

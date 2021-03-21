@@ -3,18 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufes.compilador.chain.lexico.tipo;
+package br.ufes.compilador.chain.lexico.delimitadores.instrucoes;
 
 import br.ufes.compilador.chain.AbstractHandler;
+import br.ufes.compilador.chain.lexico.delimitadores.literais.HandlerAspas;
 import br.ufes.compilador.models.Token;
 
 /**
  *
  * @author Matheus
  */
-public class HandlerFechaChave  extends AbstractHandler{
+public class HandlerPontoEVirgula extends AbstractHandler{
 
-    public HandlerFechaChave(Token token) {
+    public HandlerPontoEVirgula(Token token) {
         super(token);
     }
 
