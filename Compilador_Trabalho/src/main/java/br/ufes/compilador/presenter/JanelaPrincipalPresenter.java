@@ -12,8 +12,12 @@ import br.ufes.compilador.models.Token;
 import br.ufes.compilador.view.JanelaPrincipalView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -25,6 +29,9 @@ public class JanelaPrincipalPresenter {
     private JanelaPrincipalView view;
     private List<LinhaCodigo> linhas;
     private List<Token> tokens;
+    private Timer timerReloadCodigo;
+    private boolean listenerAlteracoes = false;
+    private KeyListener keyListenerTextArea;
 
     public JanelaPrincipalPresenter() {
             
@@ -39,6 +46,20 @@ public class JanelaPrincipalPresenter {
                 public void actionPerformed(ActionEvent e) {
                     view.getTxtSaida().setText("Compilado!");
                     compilarCodigo(view.getTxtCodigo().getText());
+                }
+            }
+        );
+        
+            //Gerando actionListener para o Radio que define se a análise léxica será automática ou não
+        this.view.getRbAnaliseLexicaAuto().addActionListener(
+                new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(view.getRbAnaliseLexicaAuto().isSelected()){
+                        addKeyReleaseListenerCodigo();
+                    }else{
+                        view.getTxtCodigo().removeKeyListener(keyListenerTextArea);
+                    }
                 }
             }
         );
@@ -202,4 +223,52 @@ public class JanelaPrincipalPresenter {
         
         this.view.getTblAnaliseLexica().setModel(modelTabela);
     }
+    
+    /**
+     * Método responsável por criar um listener para escrita no TextArea do código
+     */
+    private void addKeyReleaseListenerCodigo(){
+        
+        keyListenerTextArea = new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                listenerAlteracoes = true;
+                actionListenerKeyReleasedTextArea();
+            }
+        };
+        
+        this.view.getTxtCodigo().addKeyListener(keyListenerTextArea);
+    }
+       
+    private void actionListenerKeyReleasedTextArea() {
+        
+        view.getTblAnaliseLexica().clearSelection();
+
+        if (listenerAlteracoes) {
+            if (timerReloadCodigo != null) {
+                timerReloadCodigo.stop();
+                timerReloadCodigo = null;
+            }
+
+            ActionListener action = new ActionListener() {
+                @Override
+                public void actionPerformed(@SuppressWarnings("unused") java.awt.event.ActionEvent e) {
+                    if (listenerAlteracoes) {
+                        listenerAlteracoes = false;
+                        compilarCodigo(view.getTxtCodigo().getText());
+                    }
+                }
+            };
+
+            timerReloadCodigo = new Timer(1000, action);
+            timerReloadCodigo.start();
+
+        } else {
+            if (timerReloadCodigo != null) {
+                timerReloadCodigo.stop();
+                timerReloadCodigo = null;
+            }
+        }
+    }
+    
 }
