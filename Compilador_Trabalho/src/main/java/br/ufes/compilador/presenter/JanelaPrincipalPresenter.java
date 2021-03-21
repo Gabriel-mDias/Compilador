@@ -10,14 +10,18 @@ import br.ufes.compilador.chain.lexico.especificadores.HandlerAuto;
 import br.ufes.compilador.models.LinhaCodigo;
 import br.ufes.compilador.models.Token;
 import br.ufes.compilador.view.JanelaPrincipalView;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -44,7 +48,6 @@ public class JanelaPrincipalPresenter {
             new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    view.getTxtSaida().setText("Compilado!");
                     compilarCodigo(view.getTxtCodigo().getText());
                 }
             }
@@ -63,6 +66,17 @@ public class JanelaPrincipalPresenter {
                 }
             }
         );
+        
+        this.view.getTblSaida().getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if(view.getTblSaida().getSelectedRow()>= 0){
+                        erroSelecionado(view.getTblSaida().getSelectedRow());
+                    }
+                }
+            }
+       );
     }
     
     private void compilarCodigo(String codigoFonte){
@@ -72,10 +86,10 @@ public class JanelaPrincipalPresenter {
         int posicaoLinha = 1;
         int idToken = 1;
         
-        codigoFonte = preProcessamentoCodigo(codigoFonte);
+        String codigoFonteProcessado = preProcessamentoCodigo(codigoFonte);
         
             //Para cada quebra de linha, uma nova LinhaCodigo é gerada
-        for(String linha : codigoFonte.split("\n")){
+        for(String linha : codigoFonteProcessado.split("\n")){
             
             LinhaCodigo novaLinha = new LinhaCodigo(linha, posicaoLinha++).removerComentarioSimples();
             linhas.add(novaLinha);
@@ -83,7 +97,7 @@ public class JanelaPrincipalPresenter {
                 //Para cada linha, Tokens são buscados
             String palavra = "";
             
-            //A opção por percorrer caracter por caracter é devido a possibilidade de um simbolo estar presente mais de uma vez na lista
+            //A opção por percorrer caracter por caracter é devido a possibilidade de um simbolo estar presente mais de uma vez na linha
             for(int posicao = 0; posicao < novaLinha.getConteudo().length(); posicao++ ){
                 
                 if(novaLinha.getConteudo().charAt(posicao) != ' '){
@@ -105,8 +119,11 @@ public class JanelaPrincipalPresenter {
             }
         }
 
+        this.tokens =  this.calcularPosicaoOriginal(tokens, codigoFonte);
         this.tokens = this.chainAnaliseLexica(tokens);
         this.preencheTabelaAnaliseLexica(tokens);
+        this.preencheTabelaErro(tokens);
+        
     }
     
     /**
@@ -115,6 +132,9 @@ public class JanelaPrincipalPresenter {
      * @return 
      */
     private String preProcessamentoCodigo(String codigoFonte){
+        
+        //Removendo blocos de comentários
+        codigoFonte = codigoFonte.replaceAll("\\/\\*([\\s\\S]*)\\*\\/", "");
         
             //Separação dos tokens específicos, dando o espaço do restante
   
@@ -173,10 +193,6 @@ public class JanelaPrincipalPresenter {
         codigoFonte = codigoFonte.replaceAll("\\*", " \\* ");
         codigoFonte = codigoFonte.replaceAll("\\* \\.=", "\\*=");
 
-        codigoFonte = codigoFonte.replaceAll("\\/ = ", " \\/.= ");
-        codigoFonte = codigoFonte.replaceAll("\\/", " \\/ ");
-        codigoFonte = codigoFonte.replaceAll("\\/ \\.=", "\\/=");
-
         codigoFonte = codigoFonte.replaceAll("\\% = ", " \\%.= ");
         codigoFonte = codigoFonte.replaceAll("\\%", " \\% ");
         codigoFonte = codigoFonte.replaceAll("\\% \\.=", "\\%=");
@@ -185,9 +201,6 @@ public class JanelaPrincipalPresenter {
         codigoFonte = codigoFonte.replaceAll("\t", " ");
         codigoFonte = codigoFonte.replaceAll("\\ +", " ");
         codigoFonte = codigoFonte.replaceAll("\\ \\n", "\\\n");
-        
-        //Removendo blocos de comentários
-        codigoFonte = codigoFonte.replaceAll("\\/\\*([\\s\\S]*)\\*\\/", "");
         
         return codigoFonte;
     }
@@ -271,4 +284,101 @@ public class JanelaPrincipalPresenter {
         }
     }
     
+    private void preencheTabelaErro(List<Token> tokens){
+        DefaultTableModel modelTabela = new DefaultTableModel(new Object[]{"Error", "Linha", "Posição", "ID do Token"}, 0) {
+            @Override
+            public boolean isCellEditable(int rowIndex, int mColIndex) {
+                return false;
+            }
+        }; 
+        
+        for(Token token : tokens){
+            if(token.getCategoria().equalsIgnoreCase("error") || token.getCategoria().equalsIgnoreCase("undefined")){
+                modelTabela.addRow(new Object[]{
+                    token.getCategoria().equalsIgnoreCase("error") ? "Erro léxico" : token.getCategoria(),
+                    token.getLinha().getPosicao(),
+                    token.getPosicaoInicio(),
+                    token.getId()
+                });
+            }
+            
+        }
+        
+        this.view.getTblSaida().setModel(modelTabela);
+    }
+    
+    /**
+     * Para fazer o pré processamento, o texto original é moldado de acordo com algumas necessidades
+     * e essas necessidades o distorcem. Para calcular a real posição, esse método usa o texto original.
+     * @param tokens
+     * @param textoOriginal
+     * @return 
+     */
+    private List<Token> calcularPosicaoOriginal(List<Token> tokens, String textoOriginal){
+        
+        /**
+         * Ordena a lista visando o ID, do maior para o menor
+         */
+        tokens.sort( new Comparator<Token>(){
+            @Override
+            public int compare(Token o1, Token o2) {
+                if(o2.getId() > o1.getId()){
+                    return -1;   //O primeiro é menor que o segundo
+                }
+                return 1; //O segundo é menor que o primeiro
+            }
+        });
+        
+        int posTexto=0;
+        int posToken, posComentarioSimples, posComentarioBloco;
+        for(Token token : tokens){
+            posToken = textoOriginal.indexOf(token.getSimbolo(), posTexto);
+            posComentarioSimples = textoOriginal.indexOf("//", posTexto);
+            posComentarioBloco = textoOriginal.indexOf("/*", posTexto);
+            
+                //Se não forem encontrados, sua posição é jogada após o final do texto
+            posComentarioSimples = posComentarioSimples > 0 ? posComentarioSimples : textoOriginal.length()+1;
+            posComentarioBloco = posComentarioBloco > 0 ? posComentarioBloco : textoOriginal.length()+1;
+            
+                /*Caso há um comentário antes da ocorrência do token:
+                Esse loop tentará procurar a primeira ocorrência do fechamento do bloco de comentário, e saltar a variável 
+                referente a posição do texto*/
+            while(posToken > posComentarioSimples || posToken > posComentarioBloco){
+                if(posToken > posComentarioSimples){
+                    posTexto=textoOriginal.indexOf("\n", posComentarioSimples);
+                }else if(posToken > posComentarioBloco){
+                    posTexto=textoOriginal.indexOf("*/", posComentarioBloco) + 1;
+                }
+                posToken = textoOriginal.indexOf(token.getSimbolo(), posTexto);
+                posComentarioSimples = textoOriginal.indexOf("//", posTexto) > 0 ? textoOriginal.indexOf("//", posTexto) : textoOriginal.length()+1;
+                posComentarioBloco = textoOriginal.indexOf("*/", posTexto) > 0   ? textoOriginal.indexOf("*/", posTexto) : textoOriginal.length()+1;
+            }
+            
+            token.setPosicaoInicio(posToken);
+            token.setPosicaoFim(posToken+token.getSimbolo().length());
+            
+            posTexto=token.getPosicaoFim();
+        }
+        
+        return tokens;
+    }
+    
+    private void erroSelecionado(int linhaTblSaida){
+        int idToken = (int) this.view.getTblSaida().getValueAt(linhaTblSaida, 3);
+        
+        Token erroSelecionado = null;
+        for(Token token : tokens){
+            if(token.getId() == idToken){
+                erroSelecionado = token;
+                break;
+            }   
+        }
+        
+        if(erroSelecionado != null){
+            this.view.getTxtCodigo().setSelectionStart(erroSelecionado.getPosicaoInicio());
+            this.view.getTxtCodigo().setSelectionEnd(erroSelecionado.getPosicaoFim());
+            this.view.getTxtCodigo().setSelectionColor(Color.PINK);
+            this.view.getTxtCodigo().requestFocus();
+        }
+    }
 }

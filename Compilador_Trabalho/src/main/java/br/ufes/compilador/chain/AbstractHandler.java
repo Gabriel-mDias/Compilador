@@ -14,6 +14,7 @@ import br.ufes.compilador.models.Token;
 public abstract class AbstractHandler {
     
     protected AbstractHandler proximo;
+    protected static int tamanhoMaximoId = 31;
 
     public AbstractHandler(Token token) {
         executar(token);
@@ -24,4 +25,8 @@ public abstract class AbstractHandler {
     }
     
     public abstract void executar(Token token);
+    
+    public static void setTamanhoMaximoId(int tamanho){
+        AbstractHandler.tamanhoMaximoId = tamanho;
+    }
 }

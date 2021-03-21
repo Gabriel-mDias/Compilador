@@ -34,8 +34,8 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         toolBar = new javax.swing.JToolBar();
         btnCompilar = new javax.swing.JButton();
         lbSaida = new javax.swing.JLabel();
-        scrollPanelSaida = new javax.swing.JScrollPane();
-        txtSaida = new javax.swing.JTextArea();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblSaida = new javax.swing.JTable();
         menuBar = new javax.swing.JMenuBar();
         menuArquivo = new javax.swing.JMenu();
         menuExecutar = new javax.swing.JMenu();
@@ -110,10 +110,29 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
 
         lbSaida.setText("Saída:");
 
-        txtSaida.setEditable(false);
-        txtSaida.setColumns(20);
-        txtSaida.setRows(5);
-        scrollPanelSaida.setViewportView(txtSaida);
+        tblSaida.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Error", "Linha", "Posição", "ID do Token"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane1.setViewportView(tblSaida);
+        if (tblSaida.getColumnModel().getColumnCount() > 0) {
+            tblSaida.getColumnModel().getColumn(0).setResizable(false);
+            tblSaida.getColumnModel().getColumn(1).setResizable(false);
+            tblSaida.getColumnModel().getColumn(2).setResizable(false);
+            tblSaida.getColumnModel().getColumn(3).setResizable(false);
+        }
 
         menuArquivo.setText("Arquivo");
         menuBar.add(menuArquivo);
@@ -147,7 +166,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(24, 24, 24)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(scrollPanelSaida, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(lbSaida, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))))
@@ -164,7 +183,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lbSaida)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPanelSaida)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -179,6 +198,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCompilar;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lbSaida;
     private javax.swing.JMenu menuArquivo;
@@ -188,12 +208,11 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
     private javax.swing.JPanel panelCodigo;
     private javax.swing.JRadioButtonMenuItem rbAnaliseLexicaAuto;
     private javax.swing.JScrollPane scrollPanelCodigo;
-    private javax.swing.JScrollPane scrollPanelSaida;
     private javax.swing.JTabbedPane tabPanelResultados;
     private javax.swing.JTable tblAnaliseLexica;
+    private javax.swing.JTable tblSaida;
     private javax.swing.JToolBar toolBar;
     private javax.swing.JTextArea txtCodigo;
-    private javax.swing.JTextArea txtSaida;
     // End of variables declaration//GEN-END:variables
 
     public JButton getBtnCompilar() {
@@ -220,14 +239,6 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         this.txtCodigo = txtCodigo;
     }
 
-    public JTextArea getTxtSaida() {
-        return txtSaida;
-    }
-
-    public void setTxtSaida(JTextArea txtSaida) {
-        this.txtSaida = txtSaida;
-    }
-
     public JRadioButtonMenuItem getRbAnaliseLexicaAuto() {
         return rbAnaliseLexicaAuto;
     }
@@ -235,4 +246,13 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
     public void setRbAnaliseLexicaAuto(JRadioButtonMenuItem rbAnaliseLexicaAuto) {
         this.rbAnaliseLexicaAuto = rbAnaliseLexicaAuto;
     }
+
+    public JTable getTblSaida() {
+        return tblSaida;
+    }
+
+    public void setTblSaida(JTable tblSaida) {
+        this.tblSaida = tblSaida;
+    }
+    
 }
