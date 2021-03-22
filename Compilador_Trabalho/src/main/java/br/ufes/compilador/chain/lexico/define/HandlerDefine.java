@@ -6,28 +6,27 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.ufes.compilador.chain.lexico.separadores;
+package br.ufes.compilador.chain.lexico.define;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.models.Token;
-import br.ufes.compilador.chain.lexico.define.HandlerDefine;
 
 /**
  *
  * @author Matheus
  */
-public class HandlerVirgula  extends AbstractHandler{
+public class HandlerDefine extends AbstractHandler{
 
-    public HandlerVirgula(Token token) {
+    public HandlerDefine(Token token) {
         super(token);
     }
 
     @Override
     public void executar(Token token) {
-        if (token.getSimbolo().toString().toLowerCase().compareTo(",") == 0){
-            token.setCategoria("separador_virgula");
+        if (token.getSimbolo().toString().toLowerCase().compareTo("#define") == 0){
+            token.setCategoria("define");
         } else {
-            this.setProximo(new HandlerDefine(token));
+            this.setProximo(null);
         }
     }
     
