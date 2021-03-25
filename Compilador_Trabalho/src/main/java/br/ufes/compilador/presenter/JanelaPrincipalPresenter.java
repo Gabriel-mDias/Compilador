@@ -7,6 +7,7 @@ package br.ufes.compilador.presenter;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.chain.lexico.especificadores.HandlerAuto;
+import br.ufes.compilador.models.Erros;
 import br.ufes.compilador.models.LinhaCodigo;
 import br.ufes.compilador.models.Token;
 import br.ufes.compilador.view.JanelaPrincipalView;
@@ -32,12 +33,16 @@ public class JanelaPrincipalPresenter {
     
     private JanelaPrincipalView view;
     private List<LinhaCodigo> linhas;
+    private Erros gerenciadorErro;
     private List<Token> tokens;
     private Timer timerReloadCodigo;
     private boolean listenerAlteracoes = false;
     private KeyListener keyListenerTextArea;
 
     public JanelaPrincipalPresenter() {
+        
+            //Inicializando variáveis
+        this.gerenciadorErro = new Erros();
             
             //Gerando a nova tela
         this.view = new JanelaPrincipalView();
@@ -73,10 +78,13 @@ public class JanelaPrincipalPresenter {
                 public void valueChanged(ListSelectionEvent e) {
                     if(view.getTblSaida().getSelectedRow()>= 0){
                         erroSelecionado(view.getTblSaida().getSelectedRow());
+                    }else{
+                        view.getTxtCodigo().setSelectionColor(new Color(176, 197, 227));
                     }
                 }
             }
        );
+        
     }
     
     private void compilarCodigo(String codigoFonte){
@@ -212,6 +220,10 @@ public class JanelaPrincipalPresenter {
     private List<Token> chainAnaliseLexica(List<Token> tokens){
         for(Token token : tokens){
             AbstractHandler handler = new HandlerAuto(token);
+            
+            if(token.getCategoria().equalsIgnoreCase("error") || token.getCategoria().equalsIgnoreCase("undefined")){
+                this.gerenciadorErro.addErro( token, handler.recuperarErrosLexico(token) );
+            }
         }
         
         return tokens;
@@ -294,8 +306,9 @@ public class JanelaPrincipalPresenter {
         
         for(Token token : tokens){
             if(token.getCategoria().equalsIgnoreCase("error") || token.getCategoria().equalsIgnoreCase("undefined")){
+                
                 modelTabela.addRow(new Object[]{
-                    token.getCategoria().equalsIgnoreCase("error") ? "Erro léxico" : token.getCategoria(),
+                    gerenciadorErro.getMensagem(token),
                     token.getLinha().getPosicao(),
                     token.getPosicaoInicio(),
                     token.getId()

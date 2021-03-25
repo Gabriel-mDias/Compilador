@@ -8,6 +8,7 @@ package br.ufes.compilador.chain.lexico.delimitadores.instrucoes;
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.chain.lexico.delimitadores.literais.HandlerAspas;
 import br.ufes.compilador.models.Token;
+import br.ufes.compilador.utils.StringUtils;
 
 /**
  *
@@ -28,4 +29,14 @@ public class HandlerPontoEVirgula extends AbstractHandler{
         }
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        if(StringUtils.similarity(token.getSimbolo(), ";") >= 0.8 ){
+            return "Esse token é similar a: delimitador_instrucao_ponto_e_virgula ";
+        } else if(StringUtils.similarity(token.getSimbolo(), ";") > 0.5 ){
+            return "Esse token é poderia ser substituido por: delimitador_instrucao_ponto_e_virgula; "+ proximo.recuperarErrosLexico(token);
+        } 
+        
+        return proximo.recuperarErrosLexico(token);
+    }
 }

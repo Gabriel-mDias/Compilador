@@ -26,6 +26,8 @@ public abstract class AbstractHandler {
     
     public abstract void executar(Token token);
     
+    public abstract String recuperarErrosLexico(Token token);
+    
     public static void setTamanhoMaximoId(int tamanho){
         AbstractHandler.tamanhoMaximoId = tamanho;
     }

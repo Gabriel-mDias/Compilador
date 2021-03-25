@@ -7,6 +7,7 @@ package br.ufes.compilador.chain.lexico.especificadores;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.models.Token;
+import br.ufes.compilador.utils.StringUtils;
 
 /**
  *
@@ -27,4 +28,14 @@ public class HandlerStatic extends AbstractHandler {
         }
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        if(StringUtils.similarity(token.getSimbolo(), "static") >= 0.8 ){
+            return "Esse token é similar a: Especificador_STATIC ";
+        } else if(StringUtils.similarity(token.getSimbolo(), "static") > 0.5 ){
+            return "Esse token é poderia ser substituido por: Especificador_STATIC; "+ proximo.recuperarErrosLexico(token);
+        } 
+        
+        return proximo.recuperarErrosLexico(token);
+    }
 }

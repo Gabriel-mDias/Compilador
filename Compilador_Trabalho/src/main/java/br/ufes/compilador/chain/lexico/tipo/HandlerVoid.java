@@ -8,6 +8,7 @@ package br.ufes.compilador.chain.lexico.tipo;
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.chain.lexico.delimitadores.blocos.HandlerAbreChave;
 import br.ufes.compilador.models.Token;
+import br.ufes.compilador.utils.StringUtils;
 
 /**
  *
@@ -29,4 +30,14 @@ public class HandlerVoid  extends AbstractHandler{
         } 
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        if(StringUtils.similarity(token.getSimbolo(), "void") >= 0.8 ){
+            return "Esse token é similar a: Especificador_VOID ";
+        } else if(StringUtils.similarity(token.getSimbolo(), "void") > 0.5 ){
+            return "Esse token é poderia ser substituido por: Especificador_VOID; "+ proximo.recuperarErrosLexico(token);
+        } 
+        
+        return proximo.recuperarErrosLexico(token);
+    }
 }

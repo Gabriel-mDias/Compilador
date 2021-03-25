@@ -10,6 +10,7 @@ package br.ufes.compilador.chain.lexico.instrucoes;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.models.Token;
+import br.ufes.compilador.utils.StringUtils;
 
 /**
  *
@@ -24,10 +25,20 @@ public class HandlerFechaParentese  extends AbstractHandler{
     @Override
     public void executar(Token token) {
         if (token.getSimbolo().toString().toLowerCase().compareTo(")") == 0){
-            token.setCategoria("instrucao_fecha_colchete");
+            token.setCategoria("instrucao_fecha_parentese");
         } else {
             this.setProximo(new HandlerIf(token));
         }
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        if(StringUtils.similarity(token.getSimbolo(), ")") >= 0.8 ){
+            return "Esse token é similar a: instrucao_fecha_parentese ";
+        } else if(StringUtils.similarity(token.getSimbolo(), ")") > 0.5 ){
+            return "Esse token é poderia ser substituido por: instrucao_fecha_parentese; "+ proximo.recuperarErrosLexico(token);
+        } 
+        
+        return proximo.recuperarErrosLexico(token);
+    }
 }

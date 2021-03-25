@@ -35,7 +35,13 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         btnCompilar = new javax.swing.JButton();
         lbSaida = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblSaida = new javax.swing.JTable();
+        tblSaida = new javax.swing.JTable(){
+            @Override
+            public void changeSelection(int rowIndex, int columnIndex,
+                boolean toggle, boolean extend) {
+                super.changeSelection(rowIndex, columnIndex, true, false);
+            }
+        };
         menuBar = new javax.swing.JMenuBar();
         menuArquivo = new javax.swing.JMenu();
         menuExecutar = new javax.swing.JMenu();
@@ -190,6 +196,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
         tabPanelResultados.getAccessibleContext().setAccessibleName("Análise Lexica");
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void rbAnaliseLexicaAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbAnaliseLexicaAutoActionPerformed

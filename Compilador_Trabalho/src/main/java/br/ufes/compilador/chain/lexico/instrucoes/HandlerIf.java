@@ -10,6 +10,7 @@ package br.ufes.compilador.chain.lexico.instrucoes;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.models.Token;
+import br.ufes.compilador.utils.StringUtils;
 
 /**
  *
@@ -30,4 +31,14 @@ public class HandlerIf  extends AbstractHandler{
         }
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        if(StringUtils.similarity(token.getSimbolo(), "if") >= 0.8 ){
+            return "Esse token é similar a: instrucao_if ";
+        } else if(StringUtils.similarity(token.getSimbolo(), "if") > 0.5 ){
+            return "Esse token é poderia ser substituido por: instrucao_if; "+ proximo.recuperarErrosLexico(token);
+        } 
+        
+        return proximo.recuperarErrosLexico(token);
+    }
 }
