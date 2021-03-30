@@ -31,9 +31,9 @@ public class HandlerExtern extends AbstractHandler{
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "extern") >= 0.8 ){
-            return "Esse token é similar a: Especificador_EXTERN ";
+            return "Esse token pode ser substituido por: Especificador_EXTERN ";
         } else if(StringUtils.similarity(token.getSimbolo(), "extern") > 0.5 ){
-            return "Esse token é poderia ser substituido por: Especificador_EXTERN; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: Especificador_EXTERN; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);

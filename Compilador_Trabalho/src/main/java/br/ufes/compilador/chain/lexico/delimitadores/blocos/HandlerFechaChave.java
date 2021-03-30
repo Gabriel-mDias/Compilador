@@ -32,9 +32,9 @@ public class HandlerFechaChave  extends AbstractHandler{
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "}") >= 0.8 ){
-            return "Esse token é similar a: delimitador_bloco_fecha_chave ";
+            return "Esse token pode ser substituido por: delimitador_bloco_fecha_chave ";
         } else if(StringUtils.similarity(token.getSimbolo(), "}") > 0.5 ){
-            return "Esse token é poderia ser substituido por: delimitador_bloco_fecha_chave; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: delimitador_bloco_fecha_chave; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);

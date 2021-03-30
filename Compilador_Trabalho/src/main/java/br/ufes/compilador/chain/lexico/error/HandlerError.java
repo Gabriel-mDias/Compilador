@@ -28,4 +28,8 @@ public class HandlerError extends AbstractHandler {
         token.setCategoria("error");
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        return "Esse token é inválido";
+    }
 }

@@ -31,9 +31,9 @@ public class HandlerDouble  extends AbstractHandler{
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "double") >= 0.8 ){
-            return "Esse token é similar a: Especificador_DOUBLE ";
+            return "Esse token pode ser substituido por: Especificador_DOUBLE ";
         } else if(StringUtils.similarity(token.getSimbolo(), "double") > 0.5 ){
-            return "Esse token é poderia ser substituido por: Especificador_DOUBLE; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: Especificador_DOUBLE; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);

@@ -35,9 +35,9 @@ public class HandlerElse  extends AbstractHandler{
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "else") >= 0.8 ){
-            return "Esse token é similar a: instrucao_else ";
+            return "Esse token pode ser substituido por: instrucao_else ";
         } else if(StringUtils.similarity(token.getSimbolo(), "else") > 0.5 ){
-            return "Esse token é poderia ser substituido por: instrucao_else; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: instrucao_else; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);

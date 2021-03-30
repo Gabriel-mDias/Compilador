@@ -31,9 +31,9 @@ public class HandlerLong  extends AbstractHandler{
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "long") >= 0.8 ){
-            return "Esse token é similar a: Especificador_LONG ";
+            return "Esse token pode ser substituido por: Especificador_LONG ";
         } else if(StringUtils.similarity(token.getSimbolo(), "long") > 0.5 ){
-            return "Esse token é poderia ser substituido por: Especificador_LONG; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: Especificador_LONG; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);

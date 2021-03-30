@@ -6,7 +6,6 @@
 package br.ufes.compilador.chain.lexico.identificador;
 
 import br.ufes.compilador.chain.AbstractHandler;
-import br.ufes.compilador.chain.lexico.error.HandlerError;
 import br.ufes.compilador.models.Token;
 import java.util.regex.Pattern;
 
@@ -14,18 +13,18 @@ import java.util.regex.Pattern;
  *
  * @author gabriel
  */
-public class HandlerIdentificador extends AbstractHandler{
-    
-    public HandlerIdentificador(Token token) {
+public class HandlerDigito extends AbstractHandler{
+
+    public HandlerDigito(Token token) {
         super(token);
     }
 
    @Override
     public void executar(Token token) {
-        if (token.getSimbolo().length() <= AbstractHandler.tamanhoMaximoId && Pattern.matches("[[A-Za-z]+|[_]+][[A-Za-z0-9]+|[_]+]*", token.getSimbolo())){
-            token.setCategoria("identificador");
+        if (token.getSimbolo().length() <= AbstractHandler.tamanhoMaximoId && Pattern.matches("[0-9]*", token.getSimbolo())){
+            token.setCategoria("digito");
         } else {
-            this.setProximo(new HandlerError(token));
+            this.setProximo(new HandlerIdentificador(token));
         }
     }
     
@@ -33,4 +32,5 @@ public class HandlerIdentificador extends AbstractHandler{
     public String recuperarErrosLexico(Token token) {
         return proximo.recuperarErrosLexico(token);
     }
+    
 }

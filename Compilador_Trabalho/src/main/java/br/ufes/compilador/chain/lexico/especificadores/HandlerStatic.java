@@ -31,9 +31,9 @@ public class HandlerStatic extends AbstractHandler {
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "static") >= 0.8 ){
-            return "Esse token é similar a: Especificador_STATIC ";
+            return "Esse token pode ser substituido por: Especificador_STATIC ";
         } else if(StringUtils.similarity(token.getSimbolo(), "static") > 0.5 ){
-            return "Esse token é poderia ser substituido por: Especificador_STATIC; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: Especificador_STATIC; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);

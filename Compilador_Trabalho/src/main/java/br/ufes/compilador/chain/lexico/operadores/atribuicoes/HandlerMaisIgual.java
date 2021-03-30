@@ -10,6 +10,7 @@ package br.ufes.compilador.chain.lexico.operadores.atribuicoes;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.models.Token;
+import br.ufes.compilador.utils.StringUtils;
 
 /**
  *
@@ -30,4 +31,14 @@ public class HandlerMaisIgual  extends AbstractHandler{
         }
     }
     
+    @Override
+    public String recuperarErrosLexico(Token token) {
+        if(StringUtils.similarity(token.getSimbolo(), "+=") >= 0.8 ){
+            return "Esse token pode ser substituido por: operador_atribuicao_mais_igual ";
+        } else if(StringUtils.similarity(token.getSimbolo(), "+=") > 0.5 ){
+            return "Esse token tem similaridade com: operador_atribuicao_mais_igual; "+ proximo.recuperarErrosLexico(token);
+        } 
+        
+        return proximo.recuperarErrosLexico(token);
+    }
 }

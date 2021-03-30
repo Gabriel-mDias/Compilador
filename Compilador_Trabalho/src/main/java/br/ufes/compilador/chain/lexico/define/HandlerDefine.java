@@ -9,6 +9,7 @@
 package br.ufes.compilador.chain.lexico.define;
 
 import br.ufes.compilador.chain.AbstractHandler;
+import br.ufes.compilador.chain.lexico.operadores.logicos.HandlerELogico;
 import br.ufes.compilador.models.Token;
 import br.ufes.compilador.utils.StringUtils;
 
@@ -27,19 +28,18 @@ public class HandlerDefine extends AbstractHandler{
         if (token.getSimbolo().toString().toLowerCase().compareTo("#define") == 0){
             token.setCategoria("define");
         } else {
-            this.setProximo(null);
+            this.setProximo(new HandlerELogico(token));
         }
     }
     
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "#define") >= 0.8 ){
-            return "Esse token é similar a: define ";
+            return "Esse token pode ser substituido por: define ";
         } else if(StringUtils.similarity(token.getSimbolo(), "#define") > 0.5 ){
-            return "Esse token é poderia ser substituido por: define; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: define; "+ proximo.recuperarErrosLexico(token);
         } 
         
-        //return proximo.recuperarErrosLexico(token);
-        return "Erro qualquer";
+        return proximo.recuperarErrosLexico(token);
     }
 }

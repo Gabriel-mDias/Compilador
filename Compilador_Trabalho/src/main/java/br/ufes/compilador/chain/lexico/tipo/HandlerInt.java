@@ -31,9 +31,9 @@ public class HandlerInt  extends AbstractHandler{
     @Override
     public String recuperarErrosLexico(Token token) {
         if(StringUtils.similarity(token.getSimbolo(), "int") >= 0.8 ){
-            return "Esse token é similar a: Especificador_INT ";
+            return "Esse token pode ser substituido por: Especificador_INT ";
         } else if(StringUtils.similarity(token.getSimbolo(), "int") > 0.5 ){
-            return "Esse token é poderia ser substituido por: Especificador_INT; "+ proximo.recuperarErrosLexico(token);
+            return "Esse token tem similaridade com: Especificador_INT; "+ proximo.recuperarErrosLexico(token);
         } 
         
         return proximo.recuperarErrosLexico(token);
