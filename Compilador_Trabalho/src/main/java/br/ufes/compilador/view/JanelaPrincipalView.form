@@ -175,8 +175,8 @@
                       <Table columnCount="4" rowCount="0">
                         <Column editable="false" title="ID" type="java.lang.Object"/>
                         <Column editable="false" title="Linha" type="java.lang.Object"/>
-                        <Column editable="false" title="S&#xed;mbolo" type="java.lang.Object"/>
-                        <Column editable="false" title="Categoria" type="java.lang.Object"/>
+                        <Column editable="false" title="Lexema" type="java.lang.Object"/>
+                        <Column editable="false" title="Token" type="java.lang.Object"/>
                       </Table>
                     </Property>
                     <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">

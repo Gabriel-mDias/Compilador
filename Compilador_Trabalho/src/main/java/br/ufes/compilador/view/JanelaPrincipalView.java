@@ -73,7 +73,7 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "Linha", "Símbolo", "Categoria"
+                "ID", "Linha", "Lexema", "Token"
             }
         ) {
             boolean[] canEdit = new boolean [] {

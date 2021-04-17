@@ -230,7 +230,7 @@ public class JanelaPrincipalPresenter {
     }
     
     private void preencheTabelaAnaliseLexica(List<Token> tokens){
-        DefaultTableModel modelTabela = new DefaultTableModel(new Object[]{"ID", "Linha", "Símbolo", "Categoria"}, 0) {
+        DefaultTableModel modelTabela = new DefaultTableModel(new Object[]{"ID", "Linha", "Lexema", "Token"}, 0) {
             @Override
             public boolean isCellEditable(int rowIndex, int mColIndex) {
                 return false;
