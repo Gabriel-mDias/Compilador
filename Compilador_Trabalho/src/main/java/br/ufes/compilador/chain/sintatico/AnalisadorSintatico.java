@@ -33,7 +33,7 @@ public class AnalisadorSintatico {
     
     //Variáveis auxiliares
     private Token tokenAnalisado;
-    private ArrayList<Token> pilhaDeChaves;
+    private ArrayList<Token> pilhaBloco;
 
     public AnalisadorSintatico(JanelaPrincipalView view) {
         this.view = view;
@@ -48,7 +48,19 @@ public class AnalisadorSintatico {
         this.handlerErros = erros;
         
         this.createArvoreSintatica();
-        pilhaDeChaves = new ArrayList<>();
+        pilhaBloco = new ArrayList<>();
+        
+        this.analisarToken();
+        
+        if(!pilhaBloco.isEmpty()){
+            this.msgErro("<}>");
+        }
+        
+        // Expande todos os nós
+        for (int i = 0; i < arvoreSintatica.getRowCount(); i++) {
+            arvoreSintatica.expandRow(i);
+            arvoreSintatica.setShowsRootHandles(true);
+        }
     }
     
     
@@ -74,14 +86,15 @@ public class AnalisadorSintatico {
         // O primeiro nó
         listaNo.add(no);
 
-        JScrollPane scrollTree = new JScrollPane(arvoreSintatica);
-        scrollTree.setViewportView(arvoreSintatica);
+        JScrollPane blocoArvoreSintatica = new JScrollPane(arvoreSintatica);
+        blocoArvoreSintatica.setViewportView(arvoreSintatica);
 
         //Se não existe a aba, crie, caso contrário, sobrescreva
-        if(this.view.getTabPanelResultados().getTabCount() < 1){
-            this.view.getTabPanelResultados().add("Árvore de Análise Sintática", scrollTree);
+        if(this.view.getTabPanelResultados().getTabCount() <= 1){
+            this.view.getTabPanelResultados().add("Árvore de Análise Sintática", blocoArvoreSintatica);
         }else{
-            this.view.getTabPanelResultados().add(scrollTree,1);
+            this.view.getTabPanelResultados().removeTabAt(1);   //Considerando que será a segunda aba do PanelGroup
+            this.view.getTabPanelResultados().add("Árvore de Análise Sintática", blocoArvoreSintatica);
         }
         
 
@@ -98,15 +111,57 @@ public class AnalisadorSintatico {
     }
     
     
-    private DefaultMutableTreeNode inserirNo(DefaultMutableTreeNode pai, String filho) {
+    private DefaultMutableTreeNode inserirNovoNo(DefaultMutableTreeNode pai, String filho) {
         DefaultMutableTreeNode novo = new DefaultMutableTreeNode(filho);
         pai.add(novo);
         listaNo.add(novo);
         return novo;
     }
     
+    private void analisarToken(){
+         try {
+            if (!run()) {
+                if (!instrucao()) {
+                    if (tokenAnalisado.getSimbolo().equals("}")) {
+                        if (!pilhaBloco.isEmpty()) {
+                            pilhaBloco.remove(0);
+                            this.tokens.remove(0);
+                        } else {
+                            this.msgErro(null);
+                            recuperarErro();
+                        }
+                    } else {
+                        this.msgErro(null);
+                        recuperarErro();
+                    }
+                    recuperarErro();
+                    while (!this.tokens.isEmpty()) {
+                        analisarToken();
+                    }
+                } else {
+                    while (!this.tokens.isEmpty()) {
+                        analisarToken();
+                    }
+                }
+            } else {
+                while (!this.tokens.isEmpty()) {
+                    analisarToken();
+                }
+            }
+        } catch (Exception ex) {
+            recuperarErro();
+            while (!this.tokens.isEmpty()) {
+                analisarToken();
+            }
+        }
+         
+        if(!this.tokens.isEmpty()){
+            analisarToken();
+        }
+    }
+    
     //Esses métodos são específicos para cada tipos de Token diferente
-    private boolean programa() throws Exception {
+    private boolean run() throws Exception {
         boolean retorno = false;
 
         if (!this.tokens.isEmpty()) {
@@ -114,7 +169,7 @@ public class AnalisadorSintatico {
                 if (tipo()) {
                     if (id()) {
                         continuaID();
-                        programa();
+                        run();
                     } else {
                         this.msgErro("<identificador>");
                     }
@@ -125,13 +180,13 @@ public class AnalisadorSintatico {
             } else if (tipo()) {
                 if (id()) {
                     continuaID();
-                    programa();
+                    run();
                 } else {
                     this.msgErro("<identificador>");
                 }
                 retorno = true;
             } else if (define()) {
-                programa();
+                run();
                 retorno = true;
             }
         }
@@ -141,7 +196,7 @@ public class AnalisadorSintatico {
 
     private void continuaID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaID>");
             if (abreParentese()) {
                 parametros();
                 if (fechaParentese()) {
@@ -158,7 +213,7 @@ public class AnalisadorSintatico {
 
     private void listaID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<listaID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaID>");
             if (abreColchete()) {
                 if (num()) {
                     if (fechaColchete()) {
@@ -178,7 +233,7 @@ public class AnalisadorSintatico {
 
     private void continuaListaID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaListaID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaListaID>");
             if (separadorVirgula()) {
                 if (id()) {
                     listaID();
@@ -194,7 +249,7 @@ public class AnalisadorSintatico {
 
     private void atribuicaoID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<atribuicaoID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<atribuicaoID>");
             if (operadorDeAtribuicao()) {
                 atribuicao();
                 continuaAtribuicaoID();
@@ -207,7 +262,7 @@ public class AnalisadorSintatico {
 
     private void continuaAtribuicaoID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaAtribuicaoID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaAtribuicaoID>");
             if (!delimitadorInstrucaoPontoEVirgula()) {
                 if (separadorVirgula()) {
                     if (id()) {
@@ -224,25 +279,27 @@ public class AnalisadorSintatico {
     }
 
     private boolean parametros() throws Exception {
-        boolean retorno = false;
+
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<parametros>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<parametros>");
             if (tipo()) {
                 if (id()) {
                     continuaParametros();
-                    retorno = true;
+                    listaNo.remove(listaNo.size() - 1);
+                    return true;
+                    
                 } else {
                     msgErro("<identificador>");
                 }
             }
             listaNo.remove(listaNo.size() - 1);
         }
-        return retorno;
+        return false;
     }
 
     private void continuaParametros() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaParametros>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaParametros>");
             if (abreColchete()) {
                 if (num()) {
                     if (fechaColchete()) {
@@ -262,7 +319,7 @@ public class AnalisadorSintatico {
 
     private void listaParametros() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<listaParametros>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaParametros>");
             if (separadorVirgula()) {
                 if (!parametros()) {
                     this.msgErro("<tipo>");
@@ -273,27 +330,28 @@ public class AnalisadorSintatico {
     }
 
     private boolean bloco() throws Exception {
-        boolean retorno = false;
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<bloco>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<bloco>");
             if (abreChave()) {
-                retorno = true;
                 conteudoDeBloco();
                 if (!fechaChave()) {
                     this.msgErro("<}>");
                 }
+                listaNo.remove(listaNo.size() - 1);
+                return true;
+                
             } else if (!delimitadorInstrucaoPontoEVirgula()) {
                 this.msgErro("<{> ou <;>");
             }
             listaNo.remove(listaNo.size() - 1);
         }
-        return retorno;
+        return false;
     }
 
     private void conteudoDeBloco() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<conteudoDeBloco>");
-            if (instrucao() || programa()) {
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<conteudoDeBloco>");
+            if (instrucao() || run()) {
                 conteudoDeBloco();
             }
             listaNo.remove(listaNo.size() - 1);
@@ -303,7 +361,7 @@ public class AnalisadorSintatico {
     private boolean instrucao() throws Exception {
         boolean retorno = false;
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<instrucao>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucao>");
             // <instrucoes>
             if (id()) {
                 continuaInstrucaoID();
@@ -374,7 +432,7 @@ public class AnalisadorSintatico {
 
     private void continuaInstrucaoID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoID>");
             if (abreColchete()) {
                 if (num()) {
                     if (fechaColchete()) {
@@ -405,7 +463,7 @@ public class AnalisadorSintatico {
 
     private void parametrosInstrucaoID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<parametrosInstrucaoID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<parametrosInstrucaoID>");
             if (abreParentese()) {
                 parametrosInstrucaoID();
                 if (!fechaParentese()) {
@@ -422,7 +480,7 @@ public class AnalisadorSintatico {
 
     private void continuaInstrucoesEspecificas() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucoesEspecificas>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucoesEspecificas>");
             if (abreParentese()) {
                 continuaInstrucoesEspecificas();
                 if (!fechaParentese()) {
@@ -441,7 +499,7 @@ public class AnalisadorSintatico {
 
     private void parametrosIF() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<parametrosIF>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<parametrosIF>");
             if (abreParentese()) {
                 parametrosIF();
                 if (!fechaParentese()) {
@@ -460,8 +518,8 @@ public class AnalisadorSintatico {
 
     private void continuaInstrucaoIF() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoIF>");
-            if (!programa()) {
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoIF>");
+            if (!run()) {
                 if (!instrucao()) {
                     if (bloco()) {
                         continuaBlocoInstrucaoIF();
@@ -480,7 +538,7 @@ public class AnalisadorSintatico {
 
     private void continuaBlocoInstrucaoIF() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaBlocoInstrucaoIF>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaBlocoInstrucaoIF>");
             if (instrucaoELSE()) {
                 continuaInstrucaoELSE();
             }
@@ -490,9 +548,9 @@ public class AnalisadorSintatico {
 
     private void continuaInstrucaoELSE() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoELSE>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoELSE>");
             if (!instrucao()) {
-                if (!programa()) {
+                if (!run()) {
                     if (!bloco()) {
                         this.msgErro("<programa>, <bloco>, <instrucao>");
                     }
@@ -504,7 +562,7 @@ public class AnalisadorSintatico {
 
     private void atribuicao() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<atribuicao>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<atribuicao>");
             if (abreParentese()) {
                 atribuicao();
                 if (!fechaParentese()) {
@@ -525,7 +583,7 @@ public class AnalisadorSintatico {
 
     private void expressaoBinaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<expressaoBinaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expressaoBinaria>");
             if (operadorExpressaoBinaria()) {
                 operandoExpressaoBinaria();
                 expressaoBinaria();
@@ -536,7 +594,7 @@ public class AnalisadorSintatico {
 
     private void operandoExpressaoBinaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<operandoExpressaoBinaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operandoExpressaoBinaria>");
             if (!operando()) {
                 if (!expressaoUnaria()) {
                     this.msgErro("<operando> ou <expressaoUnaria>");
@@ -547,21 +605,22 @@ public class AnalisadorSintatico {
     }
 
     private boolean expressaoUnaria() throws Exception {
-        boolean retorno = false;
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<expressaoUnaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expressaoUnaria>");
             if ((operadorAritmeticoDeSoma()) || (operadorAritmeticoDeSubtracao())) {
-                retorno = true;
                 continuaExpressaoUnaria();
+                
+                listaNo.remove(listaNo.size() - 1);
+                return true;
             }
-            listaNo.remove(listaNo.size() - 1);
+            
         }
-        return retorno;
+        return false;
     }
 
     private void continuaExpressaoUnaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaExpressaoUnaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaExpressaoUnaria>");
             if (abreParentese()) {
                 continuaExpressaoUnariaParenteses();
                 if (!fechaParentese()) {
@@ -576,7 +635,7 @@ public class AnalisadorSintatico {
 
     private void continuaExpressaoUnariaParenteses() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaExpressaoUnariaParenteses>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaExpressaoUnariaParenteses>");
             if (!expressaoUnaria()) {
                 if (operando()) {
                     expressaoBinaria();
@@ -591,7 +650,7 @@ public class AnalisadorSintatico {
     private boolean operando() throws Exception {
         boolean retorno = false;
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<operando>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operando>");
             if (num()) {
                 retorno = true;
             } else if (literal()) {
@@ -610,7 +669,7 @@ public class AnalisadorSintatico {
 
     private void continuaOperandoID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaOperandoID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaOperandoID>");
             if (abreColchete()) {
                 if (num()) {
                     if (!fechaColchete()) {
@@ -631,7 +690,7 @@ public class AnalisadorSintatico {
 
     private boolean listaDeExpressao() throws Exception {
         boolean retorno = false;
-        inserirNo(listaNo.get(listaNo.size() - 1), "<listaDeExpresao>");
+        inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaDeExpresao>");
         if (abreParentese()) {
             listaDeExpressao();
             retorno = true;
@@ -645,8 +704,6 @@ public class AnalisadorSintatico {
             expressaoBinaria();
             continuaListaDeExpressao();
             retorno = true;
-        } else {
-            //this.msgErro("<expressaoUnaria>, <operando> AQUI");
         }
         listaNo.remove(listaNo.size() - 1);
         return retorno;
@@ -654,7 +711,7 @@ public class AnalisadorSintatico {
 
     private void continuaListaDeExpressao() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNo(listaNo.get(listaNo.size() - 1), "<continuaListaDeExpressao>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaListaDeExpressao>");
             if (separadorVirgula()) {
                 if (!listaDeExpressao()) {
                     this.msgErro("<expressaoUnaria>, <operando>");
@@ -673,8 +730,8 @@ public class AnalisadorSintatico {
                 case "define":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<define>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), "#define");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<define>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "#define");
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     if (id()) {
@@ -718,8 +775,8 @@ public class AnalisadorSintatico {
                 case "operador_logico_and":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<operadorExpressaoBinaria>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operadorExpressaoBinaria>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -739,8 +796,8 @@ public class AnalisadorSintatico {
                 case "operador_aritmetico_soma":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<operadorAritmeticoDeSoma>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operadorAritmeticoDeSoma>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -760,8 +817,8 @@ public class AnalisadorSintatico {
                 case "operador_aritmetico_subtracao":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<operadorAritmeticoDeSubtracao>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operadorAritmeticoDeSubtracao>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -786,8 +843,8 @@ public class AnalisadorSintatico {
                 case "operador_atribuicao_menos_igual":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<operadorDeAtribuicao>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operadorDeAtribuicao>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -813,8 +870,8 @@ public class AnalisadorSintatico {
                     tokenAnalisado = this.tokens.get(0);
                     if (tokenAnalisado.getCategoria().equals("delimitador_literal_aspas")) {
                         this.tokens.remove(0);
-                        inserirNo(listaNo.get(listaNo.size() - 1), "<literal>");
-                        inserirNo(listaNo.get(listaNo.size() - 1), "'" + tokenAnalisado.getSimbolo() + "'");
+                        inserirNovoNo(listaNo.get(listaNo.size() - 1), "<literal>");
+                        inserirNovoNo(listaNo.get(listaNo.size() - 1), "'" + tokenAnalisado.getSimbolo() + "'");
                         listaNo.remove(listaNo.size() - 1);
                         listaNo.remove(listaNo.size() - 1);
                         retorno = true;
@@ -836,8 +893,8 @@ public class AnalisadorSintatico {
                 case "instrucao_if":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoIF>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoIF>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -857,8 +914,8 @@ public class AnalisadorSintatico {
                 case "instrucao_else":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoELSE>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoELSE>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -878,8 +935,8 @@ public class AnalisadorSintatico {
                 case "instrucao_break":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoBreak>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoBreak>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -899,8 +956,8 @@ public class AnalisadorSintatico {
                 case "instrucao_printf":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoPrintf>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoPrintf>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -920,8 +977,8 @@ public class AnalisadorSintatico {
                 case "instrucao_scanf":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoScanf>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoScanf>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -941,8 +998,8 @@ public class AnalisadorSintatico {
                 case "instrucao_return":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoReturn>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoReturn>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -965,8 +1022,8 @@ public class AnalisadorSintatico {
                 case "Especificador_CONST":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<especificador>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<especificador>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -992,16 +1049,16 @@ public class AnalisadorSintatico {
                 case "Especificador_LONG":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<tipo>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<tipo>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
                 case "sinalizador_tipo_signed":
                 case "sinalizador_tipo_unsigned":
                     this.tokens.remove(0);
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<sinalizador>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<sinalizador>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     retorno = inteiro();
@@ -1024,8 +1081,8 @@ public class AnalisadorSintatico {
                 case "Especificador_LONG":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<inteiro>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<inteiro>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1045,8 +1102,8 @@ public class AnalisadorSintatico {
                 case "delimitador_instrucao_ponto_e_virgula":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<delimitadorPontoEVirgula>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<delimitadorPontoEVirgula>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1066,8 +1123,8 @@ public class AnalisadorSintatico {
                 case "separador_virgula":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<separadorVirgula>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<separadorVirgula>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1087,8 +1144,8 @@ public class AnalisadorSintatico {
                 case "instrucao_abre_colchete":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoAbreColchete>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoAbreColchete>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1108,8 +1165,8 @@ public class AnalisadorSintatico {
                 case "instrucao_fecha_colchete":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoFechaConlchete>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoFechaConlchete>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1129,8 +1186,8 @@ public class AnalisadorSintatico {
                 case "instrucao_abre_parentese":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoAbreParensete>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoAbreParensete>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1150,8 +1207,8 @@ public class AnalisadorSintatico {
                 case "instrucao_fecha_parentese":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoFechaParentese>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoFechaParentese>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1171,9 +1228,9 @@ public class AnalisadorSintatico {
                 case "delimitador_bloco_abre_chave":
                     this.tokens.remove(0);
                     retorno = true;
-                    pilhaDeChaves.add(tokenAnalisado);
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoAbreChave>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    pilhaBloco.add(tokenAnalisado);
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoAbreChave>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1193,11 +1250,11 @@ public class AnalisadorSintatico {
                 case "delimitador_bloco_fecha_chave":
                     this.tokens.remove(0);
                     retorno = true;
-                    if (!pilhaDeChaves.isEmpty()) {
-                        pilhaDeChaves.remove(0);
+                    if (!pilhaBloco.isEmpty()) {
+                        pilhaBloco.remove(0);
                     }
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<instrucaoFechaChave>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoFechaChave>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1217,8 +1274,8 @@ public class AnalisadorSintatico {
                 case "identificador":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<identificador>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<identificador>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1241,8 +1298,8 @@ public class AnalisadorSintatico {
                 case "digito":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNo(listaNo.get(listaNo.size() - 1), "<num>");
-                    inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<num>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
                     break;
@@ -1254,8 +1311,8 @@ public class AnalisadorSintatico {
                             this.tokens.remove(0);
                             this.tokens.remove(0);
                             retorno = true;
-                            inserirNo(listaNo.get(listaNo.size() - 1), "<num>");
-                            inserirNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo() + temp.getSimbolo());
+                            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<num>");
+                            inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo() + temp.getSimbolo());
                             listaNo.remove(listaNo.size() - 1);
                             listaNo.remove(listaNo.size() - 1);
                         }
@@ -1275,8 +1332,8 @@ public class AnalisadorSintatico {
 
             if (tokenAnalisado.getLinha().getPosicao() != pLinha) {
                 retorno = true;
-                inserirNo(listaNo.get(listaNo.size() - 1), "<CRLF>");
-                inserirNo(listaNo.get(listaNo.size() - 1), "\\n");
+                inserirNovoNo(listaNo.get(listaNo.size() - 1), "<CRLF>");
+                inserirNovoNo(listaNo.get(listaNo.size() - 1), "\\n");
                 listaNo.remove(listaNo.size() - 1);
                 listaNo.remove(listaNo.size() - 1);
             }
@@ -1307,7 +1364,7 @@ public class AnalisadorSintatico {
             }
         }
 
-        inserirNo(listaNo.get(listaNo.size() - 1), "<ERRO>");
+        inserirNovoNo(listaNo.get(listaNo.size() - 1), "<ERRO>");
         listaNo.remove(listaNo.size() - 1);
 
     }
@@ -1346,7 +1403,7 @@ public class AnalisadorSintatico {
     private void msgErro(String simboloEsperado)  {
         if (tokenAnalisado != null && !tokenAnalisado.getCategoria().equals("error")) {
 
-            if (simboloEsperado.equals("<;>") || simboloEsperado.equals("<,> ou <;>")) {
+            if (simboloEsperado.equals("<;>") || simboloEsperado.equals("<,> ou <;>") || simboloEsperado.equals("<}>")) {
                 this.handlerErros.addErro(tokenAnalisado, "Erro sintático. Esperado '" + simboloEsperado + "'.");
 
             } else {
