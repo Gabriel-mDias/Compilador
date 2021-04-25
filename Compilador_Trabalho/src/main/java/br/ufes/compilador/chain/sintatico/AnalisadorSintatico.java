@@ -41,7 +41,7 @@ public class AnalisadorSintatico {
         
     }
     
-    public void analiseSintatica(List<Token> tokens, Erros erros){
+    public Erros analiseSintatica(List<Token> tokens, Erros erros){
         this.tokens = new ArrayList<Token>();
         this.tokens.addAll(tokens);
         this.tokensOriginais = tokens;
@@ -61,6 +61,8 @@ public class AnalisadorSintatico {
             arvoreSintatica.expandRow(i);
             arvoreSintatica.setShowsRootHandles(true);
         }
+        
+        return handlerErros;
     }
     
     
@@ -120,7 +122,7 @@ public class AnalisadorSintatico {
     
     private void analisarToken(){
          try {
-            if (!run()) {
+            if (!programa()) {
                 if (!instrucao()) {
                     if (tokenAnalisado.getSimbolo().equals("}")) {
                         if (!pilhaBloco.isEmpty()) {
@@ -161,42 +163,47 @@ public class AnalisadorSintatico {
     }
     
     //Esses métodos são específicos para cada tipos de Token diferente
-    private boolean run() throws Exception {
-        boolean retorno = false;
+    private boolean programa() throws Exception {
 
         if (!this.tokens.isEmpty()) {
             if (especificador()) {
+                
                 if (tipo()) {
+                    
                     if (id()) {
-                        continuaID();
-                        run();
+                        programa2();
                     } else {
                         this.msgErro("<identificador>");
                     }
                 } else {
                     this.msgErro("<tipo>");
                 }
-                retorno = true;
+                
+                return true;
+                
             } else if (tipo()) {
+                
                 if (id()) {
-                    continuaID();
-                    run();
+                    programa2();
                 } else {
                     this.msgErro("<identificador>");
                 }
-                retorno = true;
+                
+                return true;
+                
             } else if (define()) {
-                run();
-                retorno = true;
+                programa();
+                
+                return true;
             }
         }
 
-        return retorno;
+        return false;
     }
 
-    private void continuaID() throws Exception {
+    private void programa2() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<programa2>");
             if (abreParentese()) {
                 parametros();
                 if (fechaParentese()) {
@@ -204,11 +211,17 @@ public class AnalisadorSintatico {
                 } else {
                     msgErro("<)>");
                 }
+            } else if(num()){
+                if(!delimitadorInstrucaoPontoEVirgula()){
+                    msgErro("<;>");
+                }
             } else {
                 listaID();
             }
             listaNo.remove(listaNo.size() - 1);
+            programa();
         }
+        
     }
 
     private void listaID() throws Exception {
@@ -217,23 +230,23 @@ public class AnalisadorSintatico {
             if (abreColchete()) {
                 if (num()) {
                     if (fechaColchete()) {
-                        continuaListaID();
+                        listaIDTail();
                     } else {
                         msgErro("<]>");
                     }
                 } else {
-                    msgErro("<num>");
+                    msgErro("<NUM>");
                 }
             } else {
-                continuaListaID();
+                listaIDTail();
             }
             listaNo.remove(listaNo.size() - 1);
         }
     }
 
-    private void continuaListaID() throws Exception {
+    private void listaIDTail() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaListaID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaIDTail>");
             if (separadorVirgula()) {
                 if (id()) {
                     listaID();
@@ -241,20 +254,7 @@ public class AnalisadorSintatico {
                     this.msgErro("<identificador>");
                 }
             } else if (!delimitadorInstrucaoPontoEVirgula()) {
-                atribuicaoID();
-            }
-            listaNo.remove(listaNo.size() - 1);
-        }
-    }
-
-    private void atribuicaoID() throws Exception {
-        if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<atribuicaoID>");
-            if (operadorDeAtribuicao()) {
-                atribuicao();
-                continuaAtribuicaoID();
-            } else {
-                msgErro("<operadorDeAtribuicao> ou <;>");
+                msgErro("<listaIDTail> ou <listaID>");
             }
             listaNo.remove(listaNo.size() - 1);
         }
@@ -281,7 +281,7 @@ public class AnalisadorSintatico {
     private boolean parametros() throws Exception {
 
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<parametros>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaParametros>");
             if (tipo()) {
                 if (id()) {
                     continuaParametros();
@@ -299,7 +299,7 @@ public class AnalisadorSintatico {
 
     private void continuaParametros() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaParametros>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaParamRestante>");
             if (abreColchete()) {
                 if (num()) {
                     if (fechaColchete()) {
@@ -308,7 +308,7 @@ public class AnalisadorSintatico {
                         msgErro("<]>");
                     }
                 } else {
-                    msgErro("<num>");
+                    msgErro("<NUM>");
                 }
             } else {
                 listaParametros();
@@ -351,7 +351,7 @@ public class AnalisadorSintatico {
     private void conteudoDeBloco() throws Exception {
         if (!this.tokens.isEmpty()) {
             inserirNovoNo(listaNo.get(listaNo.size() - 1), "<conteudoDeBloco>");
-            if (instrucao() || run()) {
+            if (instrucao() || programa()) {
                 conteudoDeBloco();
             }
             listaNo.remove(listaNo.size() - 1);
@@ -445,7 +445,7 @@ public class AnalisadorSintatico {
                         this.msgErro("<]>");
                     }
                 } else {
-                    this.msgErro("<num>");
+                    this.msgErro("<NUM>");
                 }
             } else if (abreParentese()) {
                 parametrosInstrucaoID();
@@ -519,7 +519,7 @@ public class AnalisadorSintatico {
     private void continuaInstrucaoIF() throws Exception {
         if (!this.tokens.isEmpty()) {
             inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoIF>");
-            if (!run()) {
+            if (!programa()) {
                 if (!instrucao()) {
                     if (bloco()) {
                         continuaBlocoInstrucaoIF();
@@ -550,7 +550,7 @@ public class AnalisadorSintatico {
         if (!this.tokens.isEmpty()) {
             inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaInstrucaoELSE>");
             if (!instrucao()) {
-                if (!run()) {
+                if (!programa()) {
                     if (!bloco()) {
                         this.msgErro("<programa>, <bloco>, <instrucao>");
                     }
@@ -676,7 +676,7 @@ public class AnalisadorSintatico {
                         this.msgErro("<]>");
                     }
                 } else {
-                    this.msgErro("<num>");
+                    this.msgErro("<NUM>");
                 }
             } else if (abreParentese()) {
                 listaDeExpressao();
@@ -742,7 +742,7 @@ public class AnalisadorSintatico {
                                 }
                             }
                         } else {
-                            msgErro("<num>");
+                            msgErro("<NUM>");
                         }
                     } else {
                         msgErro("<identificador>");
@@ -1057,7 +1057,7 @@ public class AnalisadorSintatico {
                 case "sinalizador_tipo_signed":
                 case "sinalizador_tipo_unsigned":
                     this.tokens.remove(0);
-                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<sinalizador>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<tipo>");
                     inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
@@ -1291,14 +1291,11 @@ public class AnalisadorSintatico {
         if (!this.tokens.isEmpty()) {
             tokenAnalisado = this.tokens.get(0);
 
-            // a classificação para digito no analisador léxico, já engloba
-            // número inteiros e com ponto flutuante, por isto <num> é
-            // verificado por <digito>. (Veja a gramática)
             switch (tokenAnalisado.getCategoria()) {
                 case "digito":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<num>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<NUM>");
                     inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
@@ -1311,7 +1308,7 @@ public class AnalisadorSintatico {
                             this.tokens.remove(0);
                             this.tokens.remove(0);
                             retorno = true;
-                            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<num>");
+                            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<NUM>");
                             inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo() + temp.getSimbolo());
                             listaNo.remove(listaNo.size() - 1);
                             listaNo.remove(listaNo.size() - 1);
