@@ -434,14 +434,14 @@ public class AnalisadorSintatico {
 
     private void continuaInstrucoes() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucoes>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expressao>");
             if (abreColchete()) {
                 if (num()) {
                     if (fechaColchete()) {
                         if (operadorDeAtribuicao()) {
                             atribuicao();
                         } else {
-                            this.msgErro("<operadorAtrib>");
+                            this.msgErro("<atribuicao>");
                         }
                     } else {
                         this.msgErro("<]>");
@@ -457,7 +457,7 @@ public class AnalisadorSintatico {
             } else if (operadorDeAtribuicao()) {
                 atribuicao();
             } else {
-                this.msgErro("<operadorAtrib>, <[> ou <(>");
+                this.msgErro("<atribuicao>, <[> ou <(>");
             }
             listaNo.remove(listaNo.size() - 1);
         }
@@ -492,7 +492,7 @@ public class AnalisadorSintatico {
                 if (operando()) {
                     expressaoBinaria();
                 } else {
-                    this.msgErro("<exprUnaria>, <operador> ou <(>");
+                    this.msgErro("<exprUnary>, <operador> ou <(>");
                 }
             }
             listaNo.remove(listaNo.size() - 1);
@@ -511,7 +511,7 @@ public class AnalisadorSintatico {
                 if (operando()) {
                     expressaoBinaria();
                 } else {
-                    this.msgErro("<exprUnaria>, <operador> ou <(>");
+                    this.msgErro("<exprUnary>, <operador> ou <(>");
                 }
             }
             listaNo.remove(listaNo.size() - 1);
@@ -575,7 +575,7 @@ public class AnalisadorSintatico {
                     if (operando()) {
                         expressaoBinaria();
                     } else {
-                        this.msgErro("<exprUnaria>, <operador> ou <(>");
+                        this.msgErro("<exprUnary>, <operador> ou <(>");
                     }
                 }
             }
@@ -585,7 +585,7 @@ public class AnalisadorSintatico {
 
     private void expressaoBinaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expressaoBinaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expr>");
             if (operadorExpressaoBinaria()) {
                 operandoExpressaoBinaria();
                 expressaoBinaria();
@@ -596,10 +596,10 @@ public class AnalisadorSintatico {
 
     private void operandoExpressaoBinaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operandoExpressaoBinaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expr>");
             if (!operando()) {
                 if (!expressaoUnaria()) {
-                    this.msgErro("<operando> ou <exprUnaria>");
+                    this.msgErro("<primary> ou <exprUnary>");
                 }
             }
             listaNo.remove(listaNo.size() - 1);
@@ -608,7 +608,7 @@ public class AnalisadorSintatico {
 
     private boolean expressaoUnaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<exprUnaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<exprUnary>");
             if ((operadorAritmeticoDeSoma()) || (operadorAritmeticoDeSubtracao())) {
                 continuaExpressaoUnaria();
                 
@@ -622,7 +622,7 @@ public class AnalisadorSintatico {
 
     private void continuaExpressaoUnaria() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaExpressaoUnaria>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<exprParenthesis>");
             if (abreParentese()) {
                 continuaExpressaoUnariaParenteses();
                 if (!fechaParentese()) {
@@ -637,12 +637,12 @@ public class AnalisadorSintatico {
 
     private void continuaExpressaoUnariaParenteses() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaExpressaoUnariaParenteses>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<expr>");
             if (!expressaoUnaria()) {
                 if (operando()) {
                     expressaoBinaria();
                 } else {
-                    this.msgErro("<exprUnaria> ou <operando>");
+                    this.msgErro("<exprUnary> ou <primary>");
                 }
             }
             listaNo.remove(listaNo.size() - 1);
@@ -652,7 +652,7 @@ public class AnalisadorSintatico {
     private boolean operando() throws Exception {
         boolean retorno = false;
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operando>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<primary>");
             if (num()) {
                 retorno = true;
             } else if (literal()) {
@@ -671,7 +671,7 @@ public class AnalisadorSintatico {
 
     private void continuaOperandoID() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaOperandoID>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<primaryID>");
             if (abreColchete()) {
                 if (num()) {
                     if (!fechaColchete()) {
@@ -692,7 +692,7 @@ public class AnalisadorSintatico {
 
     private boolean listaDeExpressao() throws Exception {
         boolean retorno = false;
-        inserirNovoNo(listaNo.get(listaNo.size() - 1), "<listaDeExpresao>");
+        inserirNovoNo(listaNo.get(listaNo.size() - 1), "<exprList>");
         if (abreParentese()) {
             listaDeExpressao();
             retorno = true;
@@ -713,10 +713,10 @@ public class AnalisadorSintatico {
 
     private void continuaListaDeExpressao() throws Exception {
         if (!this.tokens.isEmpty()) {
-            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<continuaListaDeExpressao>");
+            inserirNovoNo(listaNo.get(listaNo.size() - 1), "<exprListTail>");
             if (separadorVirgula()) {
                 if (!listaDeExpressao()) {
-                    this.msgErro("<exprUnaria>, <operando>");
+                    this.msgErro("<exprUnary>, <primary>");
                 }
             }
             listaNo.remove(listaNo.size() - 1);
@@ -802,6 +802,13 @@ public class AnalisadorSintatico {
                     listaNo.remove(listaNo.size() - 1);
                     break;
                 case "operador_logico_or":
+                    this.tokens.remove(0);
+                    retorno = true;
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<exprOr>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
+                    listaNo.remove(listaNo.size() - 1);
+                    listaNo.remove(listaNo.size() - 1);
+                    break;
                 case "operador_logico_and":
                     this.tokens.remove(0);
                     retorno = true;
@@ -873,7 +880,7 @@ public class AnalisadorSintatico {
                 case "operador_atribuicao_menos_igual":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operadorDeAtribuicao>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<operadorAtrib>");
                     inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
@@ -944,7 +951,7 @@ public class AnalisadorSintatico {
                 case "instrucao_else":
                     this.tokens.remove(0);
                     retorno = true;
-                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoELSE>");
+                    inserirNovoNo(listaNo.get(listaNo.size() - 1), "<instrucaoIF>");
                     inserirNovoNo(listaNo.get(listaNo.size() - 1), tokenAnalisado.getSimbolo());
                     listaNo.remove(listaNo.size() - 1);
                     listaNo.remove(listaNo.size() - 1);
