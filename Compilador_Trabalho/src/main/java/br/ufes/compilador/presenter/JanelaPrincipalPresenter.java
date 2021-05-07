@@ -7,6 +7,8 @@ package br.ufes.compilador.presenter;
 
 import br.ufes.compilador.chain.AbstractHandler;
 import br.ufes.compilador.chain.lexico.especificadores.HandlerAuto;
+import br.ufes.compilador.chain.sintatico.AnalisadorSintatico;
+import br.ufes.compilador.models.ErrorCompilacao;
 import br.ufes.compilador.models.Erros;
 import br.ufes.compilador.models.LinhaCodigo;
 import br.ufes.compilador.models.Token;
@@ -130,8 +132,9 @@ public class JanelaPrincipalPresenter {
         this.tokens =  this.calcularPosicaoOriginal(tokens, codigoFonte);
         this.tokens = this.chainAnaliseLexica(tokens);
         this.preencheTabelaAnaliseLexica(tokens);
-        this.preencheTabelaErro(tokens);
+        this.gerenciadorErro = new AnalisadorSintatico(view).analiseSintatica(tokens, gerenciadorErro);
         
+        this.preencheTabelaErro(tokens);
     }
     
     /**
@@ -304,7 +307,7 @@ public class JanelaPrincipalPresenter {
             }
         }; 
         
-        for(Token token : tokens){
+        /*for(Token token : tokens){
             if(token.getCategoria().equalsIgnoreCase("error") || token.getCategoria().equalsIgnoreCase("undefined")){
                 
                 modelTabela.addRow(new Object[]{
@@ -315,9 +318,19 @@ public class JanelaPrincipalPresenter {
                 });
             }
             
+        }*/
+        
+        for(ErrorCompilacao erro : this.gerenciadorErro.getListErro()){
+            modelTabela.addRow(new Object[]{
+                erro.getMensagemErro(),
+                erro.getToken().getLinha().getPosicao(),
+                erro.getToken().getPosicaoInicio(),
+                erro.getToken().getId()
+            });
         }
         
         this.view.getTblSaida().setModel(modelTabela);
+        this.gerenciadorErro = new Erros();
     }
     
     /**

@@ -33,5 +33,9 @@ public class Erros {
     public void addErro(Token token, String mensagemErro){
         listErro.add(new ErrorCompilacao(token, mensagemErro));
     }
+
+    public List<ErrorCompilacao> getListErro() {
+        return listErro;
+    }
     
 }

@@ -7,6 +7,7 @@ package br.ufes.compilador.view;
 
 import javax.swing.JButton;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
@@ -260,6 +261,14 @@ public class JanelaPrincipalView extends javax.swing.JFrame {
 
     public void setTblSaida(JTable tblSaida) {
         this.tblSaida = tblSaida;
+    }
+    
+    public JTabbedPane getTabPanelResultados() {
+        return tabPanelResultados;
+    }
+
+    public void setTabPanelResultados(JTabbedPane tabPanelResultados) {
+        this.tabPanelResultados = tabPanelResultados;
     }
     
 }
